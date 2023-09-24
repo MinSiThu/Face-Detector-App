@@ -57,9 +57,24 @@ class _FaceDetectorHomePageState extends State<FaceDetectorHomePage> {
     super.dispose();
   }
 
-  void getImageFromGallery() async {
+  void loadImageFromGallery() async {
     final imageFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (imageFile != null) {
+      final image = InputImage.fromFilePath(imageFile.path);
+      List<Face> faces = await _faceDetector.processImage(image);
+
+      await _loadImage(imageFile);
+
+      setState(() {
+        _faces = faces;
+        loaded = true;
+      });
+    }
+  }
+
+  void loadImageFromCamera() async {
+    final imageFile = await ImagePicker().pickImage(source: ImageSource.camera);
     if (imageFile != null) {
       final image = InputImage.fromFilePath(imageFile.path);
       List<Face> faces = await _faceDetector.processImage(image);
@@ -107,13 +122,15 @@ class _FaceDetectorHomePageState extends State<FaceDetectorHomePage> {
             ),
             Center(
               child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    loadImageFromCamera();
+                  },
                   child: const Text("Take photo with Camera")),
             ),
             Center(
               child: ElevatedButton(
                   onPressed: () {
-                    getImageFromGallery();
+                    loadImageFromGallery();
                   },
                   child: const Text("Open Gallery")),
             )
